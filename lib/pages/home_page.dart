@@ -14,12 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Band> bands = [
-    Band(id: '1', name: 'Metallic', votes: 5),
-    Band(id: '2', name: 'Soda', votes: 6),
-    Band(id: '3', name: 'TD', votes: 7),
-    Band(id: '4', name: 'Cold', votes: 8),
-  ];
+  
   @override
   Widget build(BuildContext context) {
     final socketService = Provider.of<SocketService>(context);
@@ -48,10 +43,10 @@ class _HomePageState extends State<HomePage> {
         elevation: 1,
       ),
       body: ListView.builder(
-        itemCount: bands.length,
+        itemCount: socketService.bands.length,
         itemBuilder: (context, index) {
           return BandTitle(
-            band: bands[index],
+            band: socketService.bands[index],
           );
         },
       ),
@@ -114,8 +109,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   addBandToList(String name) {
+
     if (name.isNotEmpty) {
-      bands.add(Band(id: DateTime.now().toString(), name: name));
+    //socketService.bands.add(Band(id: DateTime.now().toString(), name: name));
     }
     Navigator.pop(context);
   }
@@ -127,6 +123,7 @@ class BandTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final socketService = Provider.of<SocketService>(context);
     return Dismissible(
       key: Key(band.id),
       child: ListTile(
@@ -140,7 +137,8 @@ class BandTitle extends StatelessWidget {
           style: const TextStyle(fontSize: 20),
         ),
         onTap: () {
-          print(band.name);
+          // emit a vote to the server sending a map with key 'id' and value 'band.id'
+          socketService.socket.emit('vote-band',{'id': band.id});
         },
       ),
     );

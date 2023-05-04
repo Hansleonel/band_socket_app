@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
+import '../models/band.dart';
+
 enum ServerStatus {
   Online,
   Offline,
@@ -10,6 +12,7 @@ enum ServerStatus {
 class SocketService with ChangeNotifier {
   ServerStatus _serverStatus = ServerStatus.Connecting;
   IO.Socket _socket = IO.io('uri');
+  List<Band> _bands = [];
 
   SocketService() {
     this._initConfig();
@@ -18,6 +21,8 @@ class SocketService with ChangeNotifier {
   ServerStatus get serverStatus => _serverStatus;
 
   IO.Socket get socket => _socket;
+
+  List<Band> get bands => _bands;
 
   void _initConfig() {
     _socket = IO.io('http://localhost:3001/', {
@@ -45,6 +50,9 @@ class SocketService with ChangeNotifier {
     //   print('seniority: ${payload['seniority'] ?? 'sSr'}');
     // });
 
-    // emitir un evento desde un cliente al servidor
+    _socket.on('active-bands', (payload) {
+      _bands = (payload as List).map((band) => Band.fromMap(band)).toList();
+      notifyListeners();
+    });
   }
 }
